@@ -1,0 +1,102 @@
+volumes:
+  postgres_data:
+
+networks:
+  microservices-network:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservices-network
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - microservices-network
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+    container_name: eureka-server
+    ports:
+      - "${EUREKA_PORT}:8761"
+    networks:
+      - microservices-network
+
+  etudiant-service:
+    build:
+      context: ./api-spring-boot
+    container_name: etudiant-service
+    ports:
+      - "${ETUDIANT_SERVICE_PORT}:8081"
+    depends_on:
+      - postgres
+      - redis
+      - eureka-server
+    environment:
+      SERVER_PORT: ${ETUDIANT_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: ${DB_INTERNAL_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${REDIS_INTERNAL_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_INTERNAL_PORT}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_SERVICE_URL}
+    networks:
+      - microservices-network
+
+  grading-service:
+    build:
+      context: ./grading-service
+    container_name: grading-service
+    ports:
+      - "${GRADING_SERVICE_PORT}:8082"
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SERVER_PORT: ${GRADING_SERVICE_PORT}
+      SPRING_DATASOURCE_URL: ${DB_INTERNAL_URL}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_SERVICE_URL}
+    networks:
+      - microservices-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "${GATEWAY_PORT}:8080"
+    depends_on:
+      - eureka-server
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_SERVICE_URL}
+    networks:
+      - microservices-network
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    depends_on:
+      - api-gateway
+    networks:
+      - microservices-network

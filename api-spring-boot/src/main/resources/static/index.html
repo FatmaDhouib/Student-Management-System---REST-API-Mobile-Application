@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestion des Étudiants & Départements</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --bg: #f3f6fb;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #eef4ff, #f8fafc);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 16px;
+        }
+
+        .page-header {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: #1e3a8a;
+        }
+
+        .page-header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        .section {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #1f2937;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .toolbar input,
+        .toolbar select,
+        .form-group input,
+        .form-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            outline: none;
+            min-width: 160px;
+            font-size: 0.95rem;
+        }
+
+        .toolbar input:focus,
+        .toolbar select:focus,
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: 0.2s ease;
+            font-size: 0.92rem;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-warning { background: var(--warning); color: #111827; }
+        .btn-secondary {
+            background: #64748b;
+        }
+
+        .btn-sm {
+            padding: 7px 10px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #eff6ff;
+            color: #1e40af;
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        tr:hover td {
+            background: #f8fbff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .empty-state,
+        .loading-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 280px;
+            max-width: 420px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            color: white;
+            font-weight: 600;
+            animation: slideIn 0.25s ease;
+        }
+
+        .toast.success { background: #16a34a; }
+        .toast.error { background: #dc2626; }
+        .toast.info { background: #2563eb; }
+
+        @keyframes slideIn {
+            from { transform: translateX(30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            padding: 16px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e3a8a;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.92rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .small-text {
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                align-items: flex-start;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .toolbar input,
+            .toolbar select,
+            .toolbar button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1>🏫 Gestion des Étudiants & Départements</h1>
+            <p>Interface moderne pour Spring Boot + PostgreSQL + Redis</p>
+        </div>
+        <div>
+            <button class="btn-secondary" onclick="reloadAll()">🔄 Actualiser tout</button>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- Étudiants -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">📚 Étudiants</h2>
+                <button class="btn-success" onclick="openEtudiantModal()">➕ Nouvel étudiant</button>
+            </div>
+
+            <div class="toolbar">
+                <input type="text" id="searchText" placeholder="Rechercher par CIN ou nom..." />
+                <input type="number" id="filterAnnee" placeholder="Année (ex: 2022)" />
+                <button class="btn-primary" onclick="loadEtudiants()">Filtrer</button>
+                <button class="btn-secondary" onclick="resetEtudiantFilters()">Réinitialiser</button>
+            </div>
+
+            <div id="etudiantsList" class="loading-state">Chargement des étudiants...</div>
+        </section>
+
+        <!-- Départements -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">🏛️ Départements</h2>
+                <button class="btn-success" onclick="openDepartementModal()">➕ Nouveau</button>
+            </div>
+
+            <div class="small-text" style="margin-bottom: 12px;">
+                Gérez les départements et associez-les aux étudiants.
+            </div>
+
+            <div id="departementsList" class="loading-state">Chargement des départements...</div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal Étudiant -->
+<div class="modal" id="etudiantModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="etudiantModalTitle">Étudiant</h3>
+            <button class="btn-danger btn-sm" onclick="closeEtudiantModal()">✖</button>
+        </div>
+        <div class="modal-body">
+            <form id="etudiantForm" onsubmit="event.preventDefault(); submitEtudiantForm();">
+                <input type="hidden" id="etudiantId" />
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="cin">CIN</label>
+                        <input type="text" id="cin" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="nom">Nom</label>
+                        <input type="text" id="nom" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" />
+                    </div>
+                    <div class="form-group">
+                        <label for="dateNaissance">Date de naissance</label>
+                        <input type="date" id="dateNaissance" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="anneePremiereInscription">Année d'inscription</label>
+                        <input type="number" id="anneePremiereInscription" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="departementId">Département</label>
+                        <select id="departementId"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" type="button" onclick="closeEtudiantModal()">Annuler</button>
+            <button class="btn-success" type="submit" form="etudiantForm">💾 Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Département -->
+<div class="modal" id="departementModal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3 id="departementModalTitle">Département</h3>
+            <button class="btn-danger btn-sm" onclick="closeDepartementModal()">✖</button>
+        </div>
+        <div class="modal-body">
+            <form id="departementForm" onsubmit="event.preventDefault(); submitDepartementForm();">
+                <input type="hidden" id="departementEditId" />
+                <div class="form-group">
+                    <label for="deptNom">Nom du département</label>
+                    <input type="text" id="deptNom" required />
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" type="button" onclick="closeDepartementModal()">Annuler</button>
+            <button class="btn-success" type="submit" form="departementForm">💾 Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =============================
+    // CONFIG
+    // =============================
+    const API = {
+        etudiants: '/api/etudiants',
+        departements: '/api/departements'
+    };
+
+    // =============================
+    // STATE
+    // =============================
+    let currentDepartements = [];
+    let currentEtudiants = [];
+
+    // =============================
+    // API HELPER
+    // =============================
+    async function apiRequest(url, method = 'GET', body = null) {
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        if (body !== null) {
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            let errorMsg = `Erreur ${response.status}`;
+            try {
+                const err = await response.json();
+                errorMsg = err.message || errorMsg;
+            } catch (e) {}
+            throw new Error(errorMsg);
+        }
+
+        if (response.status === 204 || method === 'DELETE') {
+            return null;
+        }
+
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+    }
+
+    // =============================
+    // UTILITIES
+    // =============================
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(20px)';
+            toast.style.transition = 'all 0.25s ease';
+            setTimeout(() => toast.remove(), 250);
+        }, 3000);
+    }
+
+    function setLoading(elementId, message = 'Chargement...') {
+        document.getElementById(elementId).innerHTML = `<div class="loading-state">${message}</div>`;
+    }
+
+    function confirmAction(message) {
+        return window.confirm(message);
+    }
+
+    function reloadAll() {
+        loadDepartements();
+        loadEtudiants();
+        showToast('Données actualisées', 'info');
+    }
+
+    // =============================
+    // DEPARTEMENTS
+    // =============================
+    async function loadDepartements() {
+        setLoading('departementsList', 'Chargement des départements...');
+        try {
+            const deps = await apiRequest(API.departements, 'GET');
+            currentDepartements = Array.isArray(deps) ? deps : [];
+            renderDepartementsList(currentDepartements);
+            populateDepartementDropdown();
+        } catch (err) {
+            document.getElementById('departementsList').innerHTML =
+                `<div class="empty-state" style="color:#dc2626;">❌ ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderDepartementsList(deps) {
+        const container = document.getElementById('departementsList');
+
+        if (!deps.length) {
+            container.innerHTML = `<div class="empty-state">Aucun département trouvé.</div>`;
+            return;
+        }
+
+        let html = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+        deps.forEach(dep => {
+            html += `
+          <tr>
+            <td>${dep.id}</td>
+            <td><span class="badge">${escapeHtml(dep.nom)}</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn-warning btn-sm" onclick="openDepartementModal(${dep.id})">✏️</button>
+                <button class="btn-danger btn-sm" onclick="deleteDepartement(${dep.id})">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+        });
+
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+    }
+
+    function populateDepartementDropdown(selectedId = null) {
+        const select = document.getElementById('departementId');
+        if (!select) return;
+
+        let options = `<option value="">Aucun département</option>`;
+        currentDepartements.forEach(dep => {
+            const selected = selectedId === dep.id ? 'selected' : '';
+            options += `<option value="${dep.id}" ${selected}>${escapeHtml(dep.nom)}</option>`;
+        });
+        select.innerHTML = options;
+    }
+
+    function openDepartementModal(id = null) {
+        const modal = document.getElementById('departementModal');
+        const title = document.getElementById('departementModalTitle');
+        const idInput = document.getElementById('departementEditId');
+        const nameInput = document.getElementById('deptNom');
+
+        if (id) {
+            const dep = currentDepartements.find(d => d.id === id);
+            title.textContent = '✏️ Modifier le département';
+            idInput.value = dep?.id || '';
+            nameInput.value = dep?.nom || '';
+        } else {
+            title.textContent = '➕ Ajouter un département';
+            idInput.value = '';
+            nameInput.value = '';
+        }
+
+        modal.classList.add('show');
+    }
+
+    function closeDepartementModal() {
+        document.getElementById('departementModal').classList.remove('show');
+        document.getElementById('departementForm').reset();
+    }
+
+    async function submitDepartementForm() {
+        const id = document.getElementById('departementEditId').value;
+        const nom = document.getElementById('deptNom').value.trim();
+
+        if (!nom) {
+            showToast('Le nom du département est obligatoire', 'error');
+            return;
+        }
+
+        try {
+            if (id) {
+                await apiRequest(`${API.departements}/${id}`, 'PUT', { nom });
+                showToast('Département modifié avec succès', 'success');
+            } else {
+                await apiRequest(API.departements, 'POST', { nom });
+                showToast('Département créé avec succès', 'success');
+            }
+
+            closeDepartementModal();
+            await loadDepartements();
+            await loadEtudiants();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    async function deleteDepartement(id) {
+        if (!confirmAction(`Supprimer le département ${id} ? Les étudiants liés perdront leur association.`)) {
+            return;
+        }
+
+        try {
+            await apiRequest(`${API.departements}/${id}`, 'DELETE');
+            showToast('Département supprimé', 'success');
+            await loadDepartements();
+            await loadEtudiants();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    // =============================
+    // ETUDIANTS
+    // =============================
+    async function loadEtudiants() {
+        setLoading('etudiantsList', 'Chargement des étudiants...');
+
+        const annee = document.getElementById('filterAnnee').value.trim();
+        let url = API.etudiants;
+        if (annee) {
+            url += `?annee=${encodeURIComponent(annee)}`;
+        }
+
+        try {
+            const data = await apiRequest(url, 'GET');
+            currentEtudiants = Array.isArray(data) ? data : [];
+
+            const searchText = document.getElementById('searchText').value.trim().toLowerCase();
+            let filtered = [...currentEtudiants];
+
+            if (searchText) {
+                filtered = filtered.filter(e =>
+                    (e.nom && e.nom.toLowerCase().includes(searchText)) ||
+                    (e.cin && e.cin.toLowerCase().includes(searchText))
+                );
+            }
+
+            renderEtudiantsList(filtered);
+        } catch (err) {
+            document.getElementById('etudiantsList').innerHTML =
+                `<div class="empty-state" style="color:#dc2626;">❌ ${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    function renderEtudiantsList(etudiants) {
+        const container = document.getElementById('etudiantsList');
+
+        if (!etudiants.length) {
+            container.innerHTML = `<div class="empty-state">Aucun étudiant trouvé.</div>`;
+            return;
+        }
+
+        let html = `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>CIN</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Date naissance</th>
+                <th>Année</th>
+                <th>Département</th>
+                <th>Âge</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+        etudiants.forEach(e => {
+            html += `
+          <tr>
+            <td>${e.id ?? ''}</td>
+            <td>${escapeHtml(e.cin)}</td>
+            <td>${escapeHtml(e.nom)}</td>
+            <td>${escapeHtml(e.email || '')}</td>
+            <td>${escapeHtml(e.dateNaissance || '')}</td>
+            <td>${escapeHtml(e.anneePremiereInscription ?? '')}</td>
+            <td>${escapeHtml(e.departementNom || 'Aucun')}</td>
+            <td>${e.age ?? ''}</td>
+            <td>
+              <div class="actions">
+                <button class="btn-warning btn-sm" onclick="editEtudiant(${e.id})">✏️</button>
+                <button class="btn-danger btn-sm" onclick="deleteEtudiant(${e.id})">🗑️</button>
+              </div>
+            </td>
+          </tr>
+        `;
+        });
+
+        html += `</tbody></table></div>`;
+        container.innerHTML = html;
+    }
+
+    function resetEtudiantFilters() {
+        document.getElementById('filterAnnee').value = '';
+        document.getElementById('searchText').value = '';
+        loadEtudiants();
+    }
+
+    function openEtudiantModal() {
+        document.getElementById('etudiantModalTitle').textContent = '➕ Ajouter un étudiant';
+        document.getElementById('etudiantId').value = '';
+        document.getElementById('etudiantForm').reset();
+        document.getElementById('anneePremiereInscription').value = new Date().getFullYear();
+        populateDepartementDropdown();
+        document.getElementById('etudiantModal').classList.add('show');
+    }
+
+    function closeEtudiantModal() {
+        document.getElementById('etudiantModal').classList.remove('show');
+        document.getElementById('etudiantForm').reset();
+    }
+
+    async function editEtudiant(id) {
+        try {
+            const e = await apiRequest(`${API.etudiants}/${id}`, 'GET');
+
+            document.getElementById('etudiantModalTitle').textContent = '✏️ Modifier un étudiant';
+            document.getElementById('etudiantId').value = e.id ?? '';
+            document.getElementById('cin').value = e.cin ?? '';
+            document.getElementById('nom').value = e.nom ?? '';
+            document.getElementById('email').value = e.email ?? '';
+            document.getElementById('dateNaissance').value = e.dateNaissance ?? '';
+            document.getElementById('anneePremiereInscription').value = e.anneePremiereInscription ?? new Date().getFullYear();
+
+            // IMPORTANT: your backend should return departementId in GET /api/etudiants/{id}
+            populateDepartementDropdown(e.departementId ?? null);
+
+            document.getElementById('etudiantModal').classList.add('show');
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    async function submitEtudiantForm() {
+        const id = document.getElementById('etudiantId').value;
+
+        const payload = {
+            cin: document.getElementById('cin').value.trim(),
+            nom: document.getElementById('nom').value.trim(),
+            email: document.getElementById('email').value.trim() || null,
+            dateNaissance: document.getElementById('dateNaissance').value,
+            anneePremiereInscription: parseInt(document.getElementById('anneePremiereInscription').value, 10),
+            departementId: document.getElementById('departementId').value
+                ? parseInt(document.getElementById('departementId').value, 10)
+                : null
+        };
+
+        if (!payload.cin || !payload.nom || !payload.dateNaissance || !payload.anneePremiereInscription) {
+            showToast('Veuillez remplir les champs obligatoires', 'error');
+            return;
+        }
+
+        try {
+            if (id) {
+                payload.id = parseInt(id, 10);
+                await apiRequest(`${API.etudiants}/${id}`, 'PUT', payload);
+                showToast('Étudiant mis à jour avec succès', 'success');
+            } else {
+                await apiRequest(API.etudiants, 'POST', payload);
+                showToast('Étudiant créé avec succès', 'success');
+            }
+
+            closeEtudiantModal();
+            await loadEtudiants();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    async function deleteEtudiant(id) {
+        if (!confirmAction(`Supprimer définitivement l'étudiant ${id} ?`)) {
+            return;
+        }
+
+        try {
+            await apiRequest(`${API.etudiants}/${id}`, 'DELETE');
+            showToast('Étudiant supprimé', 'success');
+            await loadEtudiants();
+        } catch (err) {
+            showToast(err.message, 'error');
+        }
+    }
+
+    // =============================
+    // EVENTS
+    // =============================
+    document.getElementById('searchText').addEventListener('input', () => {
+        loadEtudiants();
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target.id === 'etudiantModal') closeEtudiantModal();
+        if (e.target.id === 'departementModal') closeDepartementModal();
+    });
+
+    // =============================
+    // INIT
+    // =============================
+    (async function init() {
+        await loadDepartements();
+        await loadEtudiants();
+        document.getElementById('anneePremiereInscription').value = new Date().getFullYear();
+    })();
+</script>
+</body>
+</html>
