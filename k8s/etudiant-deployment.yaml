@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: etudiant-service
-          image: sen5e1/etudiant-service:1.1
+          image: fatmadhouib/etudiant-service:1.1
           ports:
             - containerPort: 8080
           env:
