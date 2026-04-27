@@ -1,130 +1,158 @@
 # Projet Étudiants Management
 
-Une application full-stack moderne pour la gestion d'étudiants, combinant une **API REST Spring Boot** robuste et une **application mobile interactive** développée avec **Expo/React Native**.
+Une application full-stack moderne pour la gestion d'étudiants, évoluant
+vers une architecture microservices complète. Le projet combine une API
+REST Spring Boot robuste, des microservices de découverte et de
+notation, une API Gateway, une application mobile interactive
+(Expo/React Native), et une interface d'administration Next.js.
 
----
+## Architecture du Projet (Version 3 - Microservices)
 
-## 🏗️ Architecture du Projet
+L'architecture complète est orchestrée avec Docker Compose et se compose
+des services suivants :
 
-Le projet est divisé en deux parties principales :
+-   **Eureka Server** : Serveur de registre (Discovery Service) pour la
+    communication inter-microservices.
+-   **etudiant-service** : Microservice principal pour la gestion des
+    étudiants (hérité de l'API Spring Boot).
+-   **grading-service** : Microservice pour la gestion des notes des
+    étudiants.
+-   **api-gateway** : Point d'entrée unique (API Gateway) qui route les
+    requêtes vers les microservices appropriés.
+-   **frontend** : Application Next.js (App Router) pour
+    l'administration complète (CRUD étudiants/départements).
+-   **mobile-app** : Application mobile (Expo/React Native) pour la
+    consultation filtrée par département.
+-   **postgres** : Base de données relationnelle.
+-   **redis** : Cache pour optimiser les performances des endpoints de
+    lecture.
 
-*   **`api-spring-boot`** : Le backend fournissant une interface RESTful sécurisée connectée à une base de données PostgreSQL.
-*   **`mobile-app`** : L'interface utilisateur mobile permettant de visualiser et d'interagir avec les données des étudiants.
+## Stack Technique
 
----
+### Backend & Microservices
 
-## 🛠️ Stack Technique
+-   Framework : Spring Boot 4.0.5 / Spring Cloud
+-   Langage : Java 21
+-   Persistance : Spring Data JPA / PostgreSQL 15-alpine
+-   Cache : Redis (@Cacheable, @CacheEvict)
+-   Communication : OpenFeign, Eureka
+-   Gateway : Spring Cloud Gateway
+-   Documentation : OpenAPI 3.0 / Swagger UI
+-   Tests : Cucumber / JUnit 5
+-   Outils : Lombok, Maven
 
-### Backend (API)
-*   **Framework** : Spring Boot 4.0.5
-*   **Langage** : Java 21
-*   **Persistance** : Spring Data JPA / PostgreSQL 15-alpine
-*   **Cache** : Redis (Data caching)
-*   **Documentation** : OpenAPI 3.0 / Swagger UI
-*   **Tests** : Cucumber (BDD) / JUnit 5
-*   **Outils** : Lombok, Maven
+### Frontend Mobile
 
-### Mobile (Frontend)
-*   **Framework** : Expo 54 / React Native 0.81.5
-*   **Langage** : TypeScript
-*   **Navigation** : Expo Router (Tabs Layout)
-*   **Styling** : StyleSheet (Native)
+-   Framework : Expo / React Native
+-   Langage : TypeScript
+-   Navigation : Expo Router
+-   API : Fetch / Axios via API Gateway
+
+### Frontend Web Admin
+
+-   Framework : Next.js 14
+-   Langage : TypeScript
+-   Styling : Tailwind CSS
+-   Architecture : App Router
 
 ### DevOps & Outils
-*   **Containerisation** : Docker & Docker Compose
-*   **Gestion de Versions** : Git
 
----
+-   Docker & Docker Compose
+-   Kubernetes (K3s)
+-   GitHub Actions
+-   Git (branches version-3, CI/CD)
 
-## 🚀 Installation et Démarrage
+## Installation et Démarrage
 
-### 0. Prérequis
-Assurez-vous d'avoir installé :
-*   [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-*   [Java 21 JDK](https://adoptium.net/temurin/releases/?version=21)
-*   [Node.js](https://nodejs.org/) (v18+)
+### Prérequis
 
-### 1. Base de Données & Infrastructure
-La base de données PostgreSQL et Redis sont gérées via Docker Compose.
-```bash
-docker-compose up -d
+-   Docker Desktop
+-   Java 21
+-   Node.js 18+
+-   Git
+
+### 1. Clonage du projet
+
+``` bash
+git clone <votre-depot-url>
+cd projet-etudiants
+git checkout version-3
 ```
 
-### 2. Démarrage de l'API Backend
-Naviguez dans le dossier de l'API et lancez le serveur :
-```bash
-cd api-spring-boot
-./mvnw spring-boot:run
-```
-L'API sera accessible sur : `http://localhost:8080`
-La documentation Swagger est disponible sur : `http://localhost:8080/swagger-ui.html`
+### 2. Démarrage complet
 
-### 3. Démarrage de l'Application Mobile
-Naviguez dans le dossier mobile et lancez Expo :
-```bash
-cd mobile-app
-npm install
-npm start
-```
-Vous pouvez ensuite scanner le QR code avec l'application Expo Go sur votre téléphone ou lancer un émulateur iOS/Android.
-
----
-
-## 📂 Structure des fichiers
-
-```text
-projet-etudiants/
-├── api-spring-boot/             # Backend Java / Spring Boot
-│   ├── src/main/java/com/.../    
-│   │   ├── controller/          # Endpoints REST
-│   │   ├── model/               # Entités JPA
-│   │   ├── repository/          # Accès base de données (JPA)
-│   │   ├── service/             # Logique métier
-│   │   └── dto/                 # Objets de transfert de données
-│   ├── src/test/java/.../       # Tests (JUnit, Cucumber)
-│   ├── src/main/resources/      # application.properties
-│   ├── Dockerfile               # Image Docker Backend
-│   └── pom.xml                  # Dépendances Maven
-├── mobile-app/                  # Frontend Mobile / Expo
-│   ├── app/                     # Navigation (Expo Router)
-│   │   ├── (tabs)/              # Écrans principaux (Tab Bar)
-│   │   └── _layout.tsx          # Configuration du layout racine
-│   ├── components/              # Composants UI réutilisables
-│   ├── assets/                  # Images et Polices
-│   ├── types/                   # Définitions TypeScript
-│   ├── app.json                 # Configuration Expo
-│   └── package.json             # Dépendances NPM
-├── k8s/                         # Manifests Kubernetes (Deployments, Services)
-├── docker-compose.yml           # Orchestration Docker (API, DB, Redis)
-└── README.md                    # Documentation Générale
+``` bash
+docker compose up --build
 ```
 
----
+## Services accessibles
 
-## 🔗 Endpoints API Principaux
+-   API Gateway : http://localhost:8080
+-   Eureka Server : http://localhost:8761
+-   Frontend : http://localhost:3000
+-   Etudiant Service : http://localhost:8081
+-   Grading Service : http://localhost:8082
 
-### Étudiants (`/api/etudiants`)
-| Méthode | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/etudiants` | Liste des étudiants (filtre `?annee=` optionnel) |
-| `GET` | `/api/etudiants/{id}` | Détails d'un étudiant |
-| `POST` | `/api/etudiants` | Ajouter un étudiant |
-| `PUT` | `/api/etudiants/{id}` | Modifier un étudiant |
-| `DELETE` | `/api/etudiants/{id}` | Supprimer un étudiant |
+## API Endpoints
 
-### Départements (`/api/departements`)
-| Méthode | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/departements` | Liste de tous les départements |
-| `POST` | `/api/departements` | Créer un nouveau département |
+### Etudiants
 
-> [!TIP]
-> Pour une documentation interactive complète, visitez l'interface **Swagger UI** une fois l'API démarrée.
+-   GET /api/etudiants
+-   GET /api/etudiants/{id}
+-   POST /api/etudiants
+-   PUT /api/etudiants/{id}
+-   DELETE /api/etudiants/{id}
 
----
+### Départements
 
-## ✨ Fonctionnalités implémentées
-- ✅ Liste des étudiants avec rendu optimisé (`FlatList`)
-- ✅ Gestion d'état de chargement et d'erreur
-- ✅ Containerisation de la base de données
-- ✅ Communication Backend/Frontend temps réel
+-   GET /api/departements
+-   POST /api/departements
+-   PUT /api/departements/{id}
+-   DELETE /api/departements/{id}
+
+### Notes
+
+-   GET /api/notes
+-   POST /api/notes
+-   PUT /api/notes/{id}
+-   DELETE /api/notes/{id}
+
+## Fonctionnalités
+
+-   CRUD étudiants et départements
+-   Microservice notes (grading-service)
+-   Communication inter-microservices via Feign
+-   Service Discovery avec Eureka
+-   API Gateway centralisée
+-   Cache Redis
+-   Application mobile filtrée par département
+-   Dashboard admin Next.js
+
+## Kubernetes
+
+Déploiement via K3s :
+
+``` bash
+kubectl apply -f k8s/
+```
+
+## Tests
+
+### Backend
+
+``` bash
+./mvnw test
+```
+
+## Contribution
+
+1.  Branch from version-3
+2.  Commit with Jira key
+3.  Open Pull Request
+4.  Review required
+5.  Merge after CI checks
+
+## Licence
+
+Projet académique Spring Boot + Microservices + Docker + Mobile +
+Next.js
