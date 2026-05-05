@@ -9,10 +9,10 @@ export default function EtudiantsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/etudiants")
+    fetch("http://localhost:8888/api/etudiants")
       .then((res) => res.json())
       .then((data) => {
-        setEtudiants(data);
+        setEtudiants(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {

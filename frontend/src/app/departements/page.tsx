@@ -9,10 +9,10 @@ export default function DepartementsPage() {
 
   const fetchDepartements = () => {
     setLoading(true);
-    fetch("http://localhost:8080/api/departements")
+    fetch("http://localhost:8888/api/departements")
       .then((res) => res.json())
       .then((data) => {
-        setDepartements(data);
+        setDepartements(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
@@ -27,7 +27,7 @@ export default function DepartementsPage() {
 
   const handleDelete = async (id: number) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce département ?")) {
-      await fetch(`http://localhost:8080/api/departements/${id}`, {
+      await fetch(`http://localhost:8888/api/departements/${id}`, {
         method: "DELETE",
       });
       fetchDepartements();

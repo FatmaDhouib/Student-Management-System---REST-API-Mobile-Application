@@ -8,8 +8,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   const baseUrl = Platform.OS === 'web' 
-    ? 'http://localhost:8080' 
-    : 'http://10.0.2.2:8080';
+    ? 'http://localhost:8888' 
+    : 'http://10.0.2.2:8888';
 
   useEffect(() => {
     fetchDepartements();

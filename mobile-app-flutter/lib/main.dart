@@ -80,7 +80,7 @@ class _EtudiantsPageState extends State<EtudiantsPage> {
 
   Future<void> fetchDepartements() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:8080/api/departements'));
+      final response = await http.get(Uri.parse('http://10.0.2.2:8888/api/departements'));
       if (response.statusCode == 200) {
         List jsonResponse = json.decode(utf8.decode(response.bodyBytes));
         setState(() {
@@ -97,7 +97,7 @@ class _EtudiantsPageState extends State<EtudiantsPage> {
   }
 
   Future<List<Etudiant>> fetchEtudiants(int? departementId) async {
-    String url = 'http://localhost:8080/api/etudiants';
+    String url = 'http://10.0.2.2:8888/api/etudiants';
     // Ideally the API should support filtering by department
     // Since we didn't explicitly create a filter endpoint, we fetch all and filter client side
     // Or if the API supports it, we'd pass ?departementId=xxx
