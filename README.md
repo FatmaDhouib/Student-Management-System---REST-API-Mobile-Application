@@ -1,61 +1,57 @@
-# Spring Boot 4 + Mobile App (Flutter & React Native)
+# Spring Boot 4 + Mobile App (Flutter & React Native) - Partie 2
 
-Ce projet complet démontre la création d'une API REST avec Spring Boot (Java 21) et son intégration avec deux applications mobiles (Flutter et React Native). L'API et la base de données PostgreSQL sont orchestrées via Docker Compose.
+Ce projet complet démontre la création d'une API REST avec Spring Boot (Java 21) et son intégration avec deux applications mobiles. La **Partie 2** enrichit le projet avec une architecture en couches, du cache Redis, des tests BDD, et un déploiement Kubernetes.
 
-## Structure du Projet
+## 🚀 Nouvelles Fonctionnalités (Partie 2)
 
-- `api-spring-boot/`: Le code source de l'API REST Spring Boot, avec son Dockerfile.
-- `docker-compose.yml`: Le fichier pour orchestrer la base de données PostgreSQL et l'API Spring Boot.
-- `mobile-app-flutter/`: L'application mobile développée avec Flutter.
-- `mobile-app-react-native/`: L'application mobile développée avec React Native (Expo).
+- **Architecture en Couches** : Séparation nette entre Controller, Service, Repository, DTO et Mapper.
+- **BDD Testing** : Tests de comportement avec **Cucumber** et Gherkin pour la logique métier (`age()`).
+- **Cache Redis** : Optimisation des performances avec `@Cacheable` on the endpoints de lecture.
+- **Documentation Swagger** : OpenAPI 3 auto-générée et annotée.
+- **Interface Web Légère** : Page `index.html` simple pour lister les étudiants via Fetch API.
+- **Orchestration K8s** : Manifestes pour déploiement sur Kubernetes (K3S).
 
-## 1. Démarrer le Backend (Docker)
+## 📂 Structure du Projet
 
-Assurez-vous que Docker et Docker Compose sont installés sur votre machine.
+- `api-spring-boot/` : API REST Spring Boot (Java 21).
+  - `src/main/resources/static/index.html` : Interface web.
+  - `src/test/resources/features/` : Tests BDD Cucumber.
+- `k8s/` : Manifestes Kubernetes (Deployment, Service).
+- `docker-compose.yml` : Orchestration Docker (API + Postgres + Redis).
 
-1. Ouvrez un terminal à la racine du projet.
-2. Exécutez la commande suivante pour construire et démarrer les conteneurs :
+## 🛠️ Exécution et Test
 
-   ```bash
-   docker compose up --build
-   ```
+### 1. Backend avec Docker Compose
+```bash
+docker compose up --build
+```
+- **API** : `http://localhost:8080/api/etudiants`
+- **Swagger UI** : `http://localhost:8080/swagger-ui.html`
+- **Web Interface** : `http://localhost:8080/index.html`
 
-3. L'API sera accessible à l'adresse: `http://localhost:8080/api/etudiants`
-   - La base de données PostgreSQL est exposée sur le port `5432`.
-   - La base de données est initialisée automatiquement avec 5 étudiants.
+### 2. Tests BDD (Cucumber)
+Exécutez les tests via Maven :
+```bash
+cd api-spring-boot
+./mvnw test
+```
 
-## 2. Lancer l'Application Mobile (Flutter)
+### 3. Publication Docker Hub
+```bash
+docker build -t <votre-username>/etudiant-service:1.0 ./api-spring-boot
+docker push <votre-username>/etudiant-service:1.0
+```
 
-Assurez-vous d'avoir installé le SDK Flutter.
+### 4. Déploiement Kubernetes (K3S)
+```bash
+kubectl apply -f k8s/postgres-deployment.yaml
+kubectl apply -f k8s/redis-deployment.yaml
+kubectl apply -f k8s/etudiant-deployment.yaml
+```
+Accès via NodePort : `http://<node-ip>:30080/api/etudiants`
 
-1. Naviguez vers le dossier Flutter :
-   ```bash
-   cd mobile-app-flutter
-   ```
-2. Installez les dépendances :
-   ```bash
-   flutter pub get
-   ```
-3. Lancez l'application sur un émulateur ou un appareil physique :
-   ```bash
-   flutter run
-   ```
-   *Note: L'application utilise `http://10.0.2.2:8080/api/etudiants` par défaut, qui est l'alias de `localhost` pour l'émulateur Android. Modifiez l'URL dans `lib/main.dart` si vous testez sur un appareil iOS ou physique.*
+## 📱 Applications Mobiles
+Les instructions pour **Flutter** et **React Native** restent valables (voir dossiers respectifs). L'API est désormais compatible avec les deux grâce aux DTOs.
 
-## 3. Lancer l'Application Mobile (React Native / Expo)
-
-Assurez-vous d'avoir installé Node.js et npm.
-
-1. Naviguez vers le dossier React Native :
-   ```bash
-   cd mobile-app-react-native
-   ```
-2. Installez les dépendances (si ce n'est pas déjà fait) :
-   ```bash
-   npm install
-   ```
-3. Lancez le serveur Expo :
-   ```bash
-   npx expo start
-   ```
-   *Note: Scannez le QR Code avec l'application Expo Go sur votre téléphone, ou appuyez sur `a` pour l'émulateur Android ou `i` pour le simulateur iOS. L'URL cible est aussi `10.0.2.2` dans `App.js` par défaut.*
+---
+*Note : Pour la traçabilité Jira, chaque commit sur la branche `version-2` suit le format `PROJ-XX : description`.*

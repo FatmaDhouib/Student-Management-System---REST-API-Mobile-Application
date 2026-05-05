@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Étudiants</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f4f7f6; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #673ab7; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .container { max-width: 1000px; margin: auto; }
+        .loading { font-style: italic; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Liste des Étudiants (Spring Boot 4)</h1>
+        <p>Interface web légère utilisant l'API REST.</p>
+        
+        <div id="loading" class="loading">Chargement des données...</div>
+        
+        <table id="etudiantsTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>CIN</th>
+                    <th>Nom</th>
+                    <th>Date Naissance</th>
+                    <th>Email</th>
+                    <th>Année Inscription</th>
+                    <th>Département</th>
+                    <th>Âge</th>
+                </tr>
+            </thead>
+            <tbody id="etudiantsBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/api/etudiants')
+                .then(res => {
+                    if (!res.ok) throw new Error('Erreur réseau');
+                    return res.json();
+                })
+                .then(data => {
+                    const body = document.getElementById('etudiantsBody');
+                    const table = document.getElementById('etudiantsTable');
+                    const loading = document.getElementById('loading');
+                    
+                    data.forEach(etudiant => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${etudiant.id}</td>
+                            <td>${etudiant.cin}</td>
+                            <td>${etudiant.nom}</td>
+                            <td>${etudiant.dateNaissance}</td>
+                            <td>${etudiant.email || '-'}</td>
+                            <td>${etudiant.anneePremiereInscription || '-'}</td>
+                            <td>${etudiant.departementNom || '-'}</td>
+                            <td>${etudiant.age}</td>
+                        `;
+                        body.appendChild(row);
+                    });
+                    
+                    loading.style.display = 'none';
+                    table.style.display = 'table';
+                })
+                .catch(err => {
+                    document.getElementById('loading').innerText = 'Erreur lors du chargement: ' + err.message;
+                    console.error(err);
+                });
+        });
+    </script>
+</body>
+</html>
