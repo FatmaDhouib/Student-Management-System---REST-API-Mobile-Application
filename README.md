@@ -54,4 +54,11 @@ Accès via NodePort : `http://<node-ip>:30080/api/etudiants`
 Les instructions pour **Flutter** et **React Native** restent valables (voir dossiers respectifs). L'API est désormais compatible avec les deux grâce aux DTOs.
 
 ---
-*Note : Pour la traçabilité Jira, chaque commit sur la branche `version-2` suit le format `PROJ-XX : description`.*
+*Note : Pour la traçabilité Jira, chaque commit sur la branche `version-2` ou `version-3` suit le format `PROJ-XX : description`.*
+
+## 🤝 Conventions de Review (Partie 3)
+Afin de garantir la qualité du code :
+- Toute Pull Request (PR) doit être relue dans les **48 heures**.
+- Les commentaires de type "bloquant" doivent être résolus avant tout merge.
+- La CI (tests BDD et unitaires) doit passer au vert.
+- Les branches `main` et `version-3` sont protégées contre les push directs.

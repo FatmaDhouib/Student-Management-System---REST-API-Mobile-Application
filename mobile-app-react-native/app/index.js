@@ -1,40 +1,84 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, SafeAreaView, Platform } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ActivityIndicator, SafeAreaView, Platform, TouchableOpacity } from 'react-native';
 
 export default function App() {
+  const [departements, setDepartements] = useState([]);
+  const [selectedDepartement, setSelectedDepartement] = useState(null);
   const [etudiants, setEtudiants] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Use localhost for Web, and 10.0.2.2 for Android Emulator
-    const apiUrl = Platform.OS === 'web' 
-      ? 'http://localhost:8080/api/etudiants' 
-      : 'http://10.0.2.2:8080/api/etudiants';
+  const baseUrl = Platform.OS === 'web' 
+    ? 'http://localhost:8080' 
+    : 'http://10.0.2.2:8080';
 
-    fetch(apiUrl)
+  useEffect(() => {
+    fetchDepartements();
+  }, []);
+
+  const fetchDepartements = () => {
+    fetch(`${baseUrl}/api/departements`)
       .then(response => response.json())
       .then(data => {
+        setDepartements(data);
+        if (data.length > 0) {
+          handleSelectDepartement(data[0]);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch(error => {
+        console.error("Erreur départements:", error);
+        setLoading(false);
+      });
+  };
+
+  const handleSelectDepartement = (dept) => {
+    setSelectedDepartement(dept);
+    setLoading(true);
+    fetch(`${baseUrl}/api/etudiants`)
+      .then(response => response.json())
+      .then(data => {
+        // Ideally the API filters by dept, here we filter client-side assuming no backend filter exists
+        // If the API supported it: /api/etudiants?departementId=${dept.id}
         setEtudiants(data);
         setLoading(false);
       })
       .catch(error => {
-        console.error(error);
+        console.error("Erreur étudiants:", error);
         setLoading(false);
       });
-  }, []);
-
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Liste des Etudiants</Text>
-      {etudiants.length === 0 ? (
+      <Text style={styles.title}>Étudiants par Département</Text>
+      
+      {departements.length > 0 && (
+        <View style={styles.deptContainer}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={departements}
+            keyExtractor={item => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={[styles.deptTab, selectedDepartement?.id === item.id && styles.activeDeptTab]}
+                onPress={() => handleSelectDepartement(item)}
+              >
+                <Text style={[styles.deptText, selectedDepartement?.id === item.id && styles.activeDeptText]}>
+                  {item.nom}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
+
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : etudiants.length === 0 ? (
         <Text style={styles.empty}>Aucun étudiant trouvé.</Text>
       ) : (
         <FlatList
@@ -43,12 +87,12 @@ export default function App() {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.nom.charAt(0).toUpperCase()}</Text>
+                <Text style={styles.avatarText}>{item.nom ? item.nom.charAt(0).toUpperCase() : '?'}</Text>
               </View>
               <View style={styles.info}>
                 <Text style={styles.name}>{item.nom}</Text>
                 <Text style={styles.detail}>CIN: {item.cin}</Text>
-                <Text style={styles.detail}>Date de Naissance: {item.dateNaissance}</Text>
+                {item.age && <Text style={styles.detail}>Age: {item.age} ans</Text>}
               </View>
             </View>
           )}
@@ -70,11 +114,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
     color: '#333',
+  },
+  deptContainer: {
+    height: 60,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginBottom: 10,
+    backgroundColor: 'white',
+  },
+  deptTab: {
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
+  },
+  activeDeptTab: {
+    borderBottomColor: '#6200ee',
+  },
+  deptText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  activeDeptText: {
+    color: '#6200ee',
+    fontWeight: 'bold',
   },
   empty: {
     textAlign: 'center',

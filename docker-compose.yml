@@ -15,30 +15,84 @@ services:
     networks:
       - app-network
 
-  api:
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka_server
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+
+  etudiant-service:
     build:
       context: ./api-spring-boot
       dockerfile: Dockerfile
-    container_name: spring_boot_api
-    ports:
-      - "8080:8080"
+    container_name: etudiant_service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/etudiants_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       - db
       - redis
+      - eureka-server
     networks:
       - app-network
 
-  redis:
-    image: redis:7-alpine
-    container_name: redis_cache
+  grading-service:
+    build:
+      context: ./grading-service
+      dockerfile: Dockerfile
+    container_name: grading_service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/etudiants_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - db
+      - eureka-server
+    networks:
+      - app-network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway
     ports:
-      - "6379:6379"
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+      - etudiant-service
+      - grading-service
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nextjs_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
     networks:
       - app-network
 
