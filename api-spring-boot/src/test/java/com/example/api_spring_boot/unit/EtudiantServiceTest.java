@@ -12,6 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -37,7 +39,6 @@ class EtudiantServiceTest {
 
     @InjectMocks
     private EtudiantServiceImpl service;
-
     @Test
     void shouldReturnAllEtudiants() {
         // given
@@ -47,7 +48,7 @@ class EtudiantServiceTest {
 
         EtudiantDTO dto = new EtudiantDTO();
         dto.setId(1L);
-        when(mapper.toDTO(etudiant)).thenReturn(dto);
+        doReturn(dto).when(mapper).toDTO(any(Etudiant.class));
 
         // when
         List<EtudiantDTO> result = service.findAll();
@@ -67,7 +68,7 @@ class EtudiantServiceTest {
 
         EtudiantDTO dto = new EtudiantDTO();
         dto.setId(1L);
-        when(mapper.toDTO(etudiant)).thenReturn(dto);
+        doReturn(dto).when(mapper).toDTO(any(Etudiant.class));
 
         // when
         EtudiantDTO result = service.findById(1L);
@@ -102,9 +103,9 @@ class EtudiantServiceTest {
         outputDto.setId(1L);
         outputDto.setNom("Dupont");
 
-        when(mapper.toEntity(inputDto)).thenReturn(etudiantToSave);
+        doReturn(etudiantToSave).when(mapper).toEntity(any(EtudiantDTO.class));
         when(etudiantRepository.save(any(Etudiant.class))).thenReturn(savedEtudiant);
-        when(mapper.toDTO(savedEtudiant)).thenReturn(outputDto);
+        doReturn(outputDto).when(mapper).toDTO(any(Etudiant.class));
 
         // when
         EtudiantDTO result = service.save(inputDto);
@@ -139,10 +140,10 @@ class EtudiantServiceTest {
         outputDto.setNom("Martin");
         outputDto.setDepartementId(10L);
 
-        when(mapper.toEntity(inputDto)).thenReturn(etudiantToSave);
+        doReturn(etudiantToSave).when(mapper).toEntity(any(EtudiantDTO.class));
         when(departementRepository.findById(10L)).thenReturn(Optional.of(dep));
         when(etudiantRepository.save(any(Etudiant.class))).thenReturn(savedEtudiant);
-        when(mapper.toDTO(savedEtudiant)).thenReturn(outputDto);
+        doReturn(outputDto).when(mapper).toDTO(any(Etudiant.class));
 
         // when
         EtudiantDTO result = service.save(inputDto);

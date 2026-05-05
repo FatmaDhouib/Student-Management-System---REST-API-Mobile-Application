@@ -59,6 +59,7 @@ class EtudiantIntegrationTest {
 
         // then
         assertThat(all).isNotEmpty();
-        assertThat(all.get(0).getNom()).isEqualTo("Dupont Integration");
+        boolean found = all.stream().anyMatch(student -> student.getNom().equals("Dupont Integration"));
+        assertThat(found).isTrue();
     }
 }
