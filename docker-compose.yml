@@ -23,6 +23,31 @@ services:
     networks:
       - app-network
 
+  mongodb:
+    image: mongo:7
+    container_name: mongo_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth_service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/authdb
+      - JWT_SECRET=votre_secret_jwt_ici
+    networks:
+      - app-network
+
   eureka-server:
     build:
       context: ./eureka-server
@@ -98,6 +123,7 @@ services:
 
 volumes:
   postgres_data:
+  mongo_data:
 
 networks:
   app-network:
