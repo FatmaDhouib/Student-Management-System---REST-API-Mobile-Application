@@ -23,6 +23,7 @@ public class EtudiantServiceImpl implements EtudiantService {
     private final EtudiantRepository etudiantRepository;
     private final DepartementRepository departementRepository;
     private final EtudiantMapper mapper;
+    private final com.example.api_spring_boot.kafka.KafkaProducerService kafkaProducerService;
 
     @Override
     @Cacheable(value = "etudiants")
@@ -49,7 +50,9 @@ public class EtudiantServiceImpl implements EtudiantService {
                     .orElseThrow(() -> new ResourceNotFoundException("Departement not found with id: " + dto.getDepartementId()));
             etudiant.setDepartement(dep);
         }
-        return mapper.toDTO(etudiantRepository.save(etudiant));
+        EtudiantDTO saved = mapper.toDTO(etudiantRepository.save(etudiant));
+        kafkaProducerService.publishEtudiantCreated(saved);
+        return saved;
     }
 
     @Override

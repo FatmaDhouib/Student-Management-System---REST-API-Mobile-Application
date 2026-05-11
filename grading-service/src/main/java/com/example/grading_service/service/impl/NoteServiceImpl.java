@@ -21,6 +21,7 @@ public class NoteServiceImpl implements NoteService {
     private final NoteRepository noteRepository;
     private final NoteMapper noteMapper;
     private final EtudiantClient etudiantClient;
+    private final com.example.grading_service.kafka.KafkaProducerService kafkaProducerService;
 
     @Override
     public List<NoteDTO> findAll() {
@@ -57,7 +58,9 @@ public class NoteServiceImpl implements NoteService {
 
         Note note = noteMapper.toEntity(noteDTO);
         Note savedNote = noteRepository.save(note);
-        return noteMapper.toDTO(savedNote);
+        NoteDTO savedDto = noteMapper.toDTO(savedNote);
+        kafkaProducerService.publishNoteCreated(savedDto);
+        return savedDto;
     }
 
     @Override
