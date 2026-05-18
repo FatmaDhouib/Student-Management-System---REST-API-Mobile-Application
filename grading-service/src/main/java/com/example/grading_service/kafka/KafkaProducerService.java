@@ -13,7 +13,7 @@ public class KafkaProducerService {
 
     public void publishNoteCreated(NoteDTO note) {
         NoteEvent event = NoteEvent.builder()
-                .studentId(note.getEtudiantId())
+                .studentId(note.getStudentId())
                 .matiere(note.getMatiere())
                 .valeur(note.getValeur())
                 .build();

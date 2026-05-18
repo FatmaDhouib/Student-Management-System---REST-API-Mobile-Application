@@ -1,0 +1,4 @@
+replicaCount:
+  etudiantService: 3
+  gradingService: 2
+  frontend: 2

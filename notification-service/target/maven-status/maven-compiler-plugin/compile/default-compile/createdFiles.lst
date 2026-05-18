@@ -1,0 +1,6 @@
+com\example\notificationservice\event\EtudiantEvent$EtudiantEventBuilder.class
+com\example\notificationservice\event\NoteEvent$NoteEventBuilder.class
+com\example\notificationservice\event\NoteEvent.class
+com\example\notificationservice\listener\NotificationListener.class
+com\example\notificationservice\NotificationServiceApplication.class
+com\example\notificationservice\event\EtudiantEvent.class

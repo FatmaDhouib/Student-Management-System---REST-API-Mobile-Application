@@ -1,0 +1,29 @@
+replicaCount:
+  etudiantService: 2
+  gradingService: 1
+  frontend: 1
+
+images:
+  etudiantService:
+    repository: username/etudiant-service
+    tag: "2.0"
+    pullPolicy: IfNotPresent
+  gradingService:
+    repository: username/grading-service
+    tag: "2.0"
+    pullPolicy: IfNotPresent
+  frontend:
+    repository: username/frontend
+    tag: "2.0"
+    pullPolicy: IfNotPresent
+  authService:
+    repository: username/auth-service
+    tag: "2.0"
+    pullPolicy: IfNotPresent
+
+postgres:
+  storage: 1Gi
+  database: etudiantsdb
+
+ingress:
+  host: projet-etudiants.local

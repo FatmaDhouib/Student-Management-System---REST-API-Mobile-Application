@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etudiant-service
+  labels:
+    {{- include "projet-etudiants.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.etudiantService }}
+  selector:
+    matchLabels:
+      app: etudiant-service
+  template:
+    metadata:
+      labels:
+        app: etudiant-service
+    spec:
+      containers:
+        - name: etudiant-service
+          image: "{{ .Values.images.etudiantService.repository }}:{{ .Values.images.etudiantService.tag }}"
+          imagePullPolicy: {{ .Values.images.etudiantService.pullPolicy }}
+          ports:
+            - containerPort: 8081

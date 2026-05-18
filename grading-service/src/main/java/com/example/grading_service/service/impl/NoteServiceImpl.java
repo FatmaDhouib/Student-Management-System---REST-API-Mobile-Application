@@ -4,7 +4,7 @@ import com.example.grading_service.dto.EtudiantDTO;
 import com.example.grading_service.dto.NoteDTO;
 import com.example.grading_service.entity.Note;
 import com.example.grading_service.exception.ResourceNotFoundException;
-import com.example.grading_service.feign.EtudiantClient;
+import com.example.grading_service.client.EtudiantClient;
 import com.example.grading_service.mapper.NoteMapper;
 import com.example.grading_service.repository.NoteRepository;
 import com.example.grading_service.service.NoteService;

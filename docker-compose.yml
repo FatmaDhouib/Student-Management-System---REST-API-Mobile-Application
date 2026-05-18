@@ -53,15 +53,7 @@ services:
     networks:
       - app-network
 
-  eureka-server:
-    build:
-      context: ./eureka-server
-      dockerfile: Dockerfile
-    container_name: eureka_server
-    ports:
-      - "8761:8761"
-    networks:
-      - app-network
+
 
   etudiant-service:
     build:
@@ -74,14 +66,11 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       db:
         condition: service_healthy
       kafka:
-        condition: service_started
-      eureka-server:
         condition: service_started
       redis:
         condition: service_started
@@ -103,14 +92,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/etudiants_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       db:
         condition: service_healthy
       kafka:
-        condition: service_started
-      eureka-server:
         condition: service_started
     networks:
       - app-network
@@ -121,21 +107,7 @@ services:
       retries: 5
       start_period: 60s
 
-  api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api_gateway
-    ports:
-      - "8888:8888"
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    depends_on:
-      - eureka-server
-      - etudiant-service
-      - grading-service
-    networks:
-      - app-network
+
 
   frontend:
     build:
@@ -145,7 +117,9 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - api-gateway
+      - etudiant-service
+      - grading-service
+      - auth-service
     networks:
       - app-network
 

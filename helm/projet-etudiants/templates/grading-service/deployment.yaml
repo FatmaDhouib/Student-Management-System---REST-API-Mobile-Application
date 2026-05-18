@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grading-service
+  labels:
+    {{- include "projet-etudiants.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount.gradingService }}
+  selector:
+    matchLabels:
+      app: grading-service
+  template:
+    metadata:
+      labels:
+        app: grading-service
+    spec:
+      containers:
+        - name: grading-service
+          image: "{{ .Values.images.gradingService.repository }}:{{ .Values.images.gradingService.tag }}"
+          imagePullPolicy: {{ .Values.images.gradingService.pullPolicy }}
+          ports:
+            - containerPort: 8082

@@ -1,64 +1,112 @@
-# Spring Boot 4 + Mobile App (Flutter & React Native) - Partie 2
+# Projet Étudiants — Plateforme Micro Services
 
-Ce projet complet démontre la création d'une API REST avec Spring Boot (Java 21) et son intégration avec deux applications mobiles. La **Partie 2** enrichit le projet avec une architecture en couches, du cache Redis, des tests BDD, et un déploiement Kubernetes.
+## Description
+Ce projet est une plateforme de gestion des étudiants basée sur une architecture micro-services.
+Il a été développé dans un but pédagogique pour illustrer l'évolution d'une architecture monolithique
+vers une architecture Kubernetes-native. Les technologies clés incluent Spring Boot 4, Node.js, Next.js,
+Kubernetes, Helm, et une stack complète d'observabilité.
 
-## 🚀 Nouvelles Fonctionnalités (Partie 2)
+## Architecture
 
-- **Architecture en Couches** : Séparation nette entre Controller, Service, Repository, DTO et Mapper.
-- **BDD Testing** : Tests de comportement avec **Cucumber** et Gherkin pour la logique métier (`age()`).
-- **Cache Redis** : Optimisation des performances avec `@Cacheable` on the endpoints de lecture.
-- **Documentation Swagger** : OpenAPI 3 auto-générée et annotée.
-- **Interface Web Légère** : Page `index.html` simple pour lister les étudiants via Fetch API.
-- **Orchestration K8s** : Manifestes pour déploiement sur Kubernetes (K3S).
+![Architecture AWS Cloud](https://via.placeholder.com/800x400.png?text=Architecture+AWS+Cloud)
 
-## 📂 Structure du Projet
+Cette architecture est Kubernetes-native. Les mécanismes historiques de Spring Cloud (Eureka, API Gateway, Feign)
+ont été remplacés par les primitives Kubernetes :
+- **Découverte de services** : DNS interne Kubernetes
+- **Load Balancing** : Kube-Proxy et Service Kubernetes (ClusterIP)
+- **Routage externe** : Ingress Controller (Traefik / ALB)
+- **Communication inter-services** : RestClient standard
 
-- `api-spring-boot/` : API REST Spring Boot (Java 21).
-  - `src/main/resources/static/index.html` : Interface web.
-  - `src/test/resources/features/` : Tests BDD Cucumber.
-- `k8s/` : Manifestes Kubernetes (Deployment, Service).
-- `docker-compose.yml` : Orchestration Docker (API + Postgres + Redis).
+L'architecture AWS proposée s'appuie sur Amazon EKS pour l'orchestration, RDS pour PostgreSQL,
+ElastiCache pour Redis, DocumentDB pour MongoDB, MSK pour Kafka, et ALB pour l'Ingress.
 
-## 🛠️ Exécution et Test
+## Stack technique
 
-### 1. Backend avec Docker Compose
+| Composant | Technologie |
+|---|---|
+| Micro service étudiant | Spring Boot 4, JDK 17, PostgreSQL, Redis |
+| Micro service notes | Spring Boot 4, PostgreSQL |
+| Micro service notifications | Spring Boot 4, Apache Kafka |
+| Micro service auth | Node.js, Express, MongoDB, JWT |
+| Frontend | Next.js, Tailwind CSS |
+| Application mobile | Flutter / React Native |
+| Orchestration | Kubernetes (K3S / EKS), Helm |
+| Observabilité | ELK Stack, Prometheus, Grafana |
+| CI/CD | GitHub Actions, Xray, Jira |
+
+## Lancement rapide
+
+### Prérequis
+- Docker Desktop >= 24.0
+- Java 17, Maven 3.9+
+- Node.js 20+
+- kubectl, Helm 3
+
+### Avec Docker Compose (développement local)
 ```bash
+git clone https://github.com/votre_username/projet-etudiants.git
+cd projet-etudiants
 docker compose up --build
 ```
-- **API** : `http://localhost:8080/api/etudiants`
-- **Swagger UI** : `http://localhost:8080/swagger-ui.html`
-- **Web Interface** : `http://localhost:8080/index.html`
+Accès aux services :
+- API principale : http://localhost:8080
+- Frontend : http://localhost:3000
+- Kibana (logs) : http://localhost:5601
+- Grafana (métriques) : http://localhost:3001
+- Eureka Dashboard : retiré (architecture K8s-native)
 
-### 2. Tests BDD (Cucumber)
-Exécutez les tests via Maven :
+### Avec Helm sur K3S
 ```bash
-cd api-spring-boot
-./mvnw test
+helm install projet-etudiants ./helm/projet-etudiants/
+kubectl get pods --watch
 ```
 
-### 3. Publication Docker Hub
+## Captures d'écran
+
+*(Insérez ici les captures d'écran de l'application)*
+
+## Tests
+
 ```bash
-docker build -t <votre-username>/etudiant-service:1.0 ./api-spring-boot
-docker push <votre-username>/etudiant-service:1.0
+# Tests unitaires + intégration + couverture JaCoCo
+cd api-spring-boot && mvn verify
+
+# Tests E2E Cypress (stack Docker démarrée au préalable)
+cd frontend && npx cypress run
+
+# Tests de stress Gatling
+mvn gatling:test
 ```
 
-### 4. Déploiement Kubernetes (K3S)
-```bash
-kubectl apply -f k8s/postgres-deployment.yaml
-kubectl apply -f k8s/redis-deployment.yaml
-kubectl apply -f k8s/etudiant-deployment.yaml
+## Structure du dépôt
+
+```text
+/projet-etudiants/
+├── api-spring-boot/             # Micro service étudiant (Spring Boot)
+├── grading-service/             # Micro service notes (Spring Boot)
+├── notification-service/        # Micro service notifications + Kafka consumer
+├── auth-service/                # Micro service auth (Node.js + Express + MongoDB)
+├── frontend/                    # Application Next.js
+│   └── cypress/e2e/             # Tests E2E Cypress
+├── mobile-app/                  # Application Flutter ou React Native
+├── helm/
+│   └── projet-etudiants/        # Chart Helm packagisant toute la plateforme
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       ├── values-prod.yaml
+│       └── templates/
+├── k8s/                         # Manifests Kubernetes bruts (avant Helm)
+├── observability/
+│   ├── logstash/pipeline/
+│   └── prometheus/
+├── .github/
+│   ├── workflows/
+│   │   └── test-and-report.yml
+│   ├── ISSUE_TEMPLATE/
+│   └── pull_request_template.md
+├── docker-compose.yml
+└── README.md                    # README professionnel avec captures d'écran
 ```
-Accès via NodePort : `http://<node-ip>:30080/api/etudiants`
 
-## 📱 Applications Mobiles
-Les instructions pour **Flutter** et **React Native** restent valables (voir dossiers respectifs). L'API est désormais compatible avec les deux grâce aux DTOs.
-
----
-*Note : Pour la traçabilité Jira, chaque commit sur la branche `version-2` ou `version-3` suit le format `PROJ-XX : description`.*
-
-## 🤝 Conventions de Review (Partie 3)
-Afin de garantir la qualité du code :
-- Toute Pull Request (PR) doit être relue dans les **48 heures**.
-- Les commentaires de type "bloquant" doivent être résolus avant tout merge.
-- La CI (tests BDD et unitaires) doit passer au vert.
-- Les branches `main` et `version-3` sont protégées contre les push directs.
+## Auteur
+Fatma Dhouib, 2026
